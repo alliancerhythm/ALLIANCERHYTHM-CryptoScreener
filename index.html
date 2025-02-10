@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ALLIANCE RHYTHM™ Crypto Screener</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet" />
+  <!-- TradingView Widget -->
+  <script src="https://s3.tradingview.com/tv.js"></script>
+  <style>
+    /* CSS-переменные */
+    :root {
+      --bg-color: #121212;
+      --primary-color: #4caf50;
+      --secondary-color: #eee;
+      --card-bg: #1e1e1e;
+      --hover-bg: #333;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--secondary-color);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a {
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    a:hover {
+      color: #81c784;
+    }
+    /* Header и навигация */
+    header {
+      background: linear-gradient(135deg, #1f1f1f, #2c2c2c);
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    header .logo {
+      font-size: 1.8em;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+    /* Гамбургер-меню (показывается на мобильных) */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: space-around;
+      width: 25px;
+      height: 25px;
+      cursor: pointer;
+    }
+    .hamburger span {
+      display: block;
+      height: 3px;
+      background: var(--secondary-color);
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+    /* Навигация */
+    nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: var(--secondary-color);
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+      font-size: 0.9em;
+    }
+    nav a:hover {
+      background-color: rgba(76, 175, 80, 0.2);
+    }
+    /* Мобильная навигация */
+    @media (max-width: 768px) {
+      nav {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background: #1f1f1f;
+      }
+      nav.open {
+        display: flex;
+      }
+      .hamburger {
+        display: flex;
+      }
+    }
+    main {
+      padding: 20px;
+      min-height: 80vh;
+    }
+    section {
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+      margin-bottom: 40px;
+    }
+    section.active {
+      display: block;
+    }
+    h2 {
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 5px;
+      margin-top: 0;
+      color: var(--primary-color);
+    }
+    /* Таблицы (Dashboard, Gainers, Losers) */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: var(--card-bg);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #333;
+      text-align: left;
+    }
+    th {
+      background-color: #222;
+    }
+    tr:hover {
+      background-color: var(--hover-bg);
+      cursor: pointer;
+    }
+    .green {
+      color: var(--primary-color);
+    }
+    .red {
+      color: #f44336;
+    }
+    /* Карточки для Trading и High Volume */
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .coin-card {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      padding: 15px;
+      width: 180px;
+      text-align: center;
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+    .coin-card:hover {
+      transform: translateY(-5px);
+    }
+    .coin-card img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+    }
+    .coin-card h4 {
+      margin: 10px 0 5px;
+      color: var(--primary-color);
+    }
+    .coin-card p {
+      margin: 5px 0;
+    }
+    /* Insights Section */
+    #insights-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .insight-box {
+      flex: 1 1 300px;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      transition: transform 0.3s;
+    }
+    .insight-box:hover {
+      transform: translateY(-5px);
+    }
+    /* Формы (Profile) */
+    .form-container {
+      max-width: 400px;
+      margin: 20px auto;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      transition: transform 0.3s;
+    }
+    .form-container:hover {
+      transform: scale(1.02);
+    }
+    .form-container input[type="text"],
+    .form-container input[type="password"],
+    .form-container input[type="email"] {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 4px;
+      background: #2a2a2a;
+      color: var(--secondary-color);
+    }
+    .form-container button {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary-color);
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .form-container button:hover {
+      background: #43a047;
+    }
+    .tab {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .tab button {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+    .tab button.active {
+      background: var(--primary-color);
+    }
+    .tab button:hover {
+      background: #555;
+    }
+    /* Модальное окно для TradingView графика */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.85);
+      animation: fadeIn 0.3s;
+    }
+    .modal-content {
+      background-color: var(--card-bg);
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #444;
+      width: 90%;
+      max-width: 800px;
+      border-radius: 8px;
+      position: relative;
+      animation: slideIn 0.5s;
+    }
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 28px;
+      cursor: pointer;
+      color: #aaa;
+      transition: color 0.3s;
+    }
+    .close:hover {
+      color: #fff;
+    }
+    /* Footer */
+    footer {
+      background: #1f1f1f;
+      padding: 20px;
+      text-align: center;
+      color: #ccc;
+    }
+    footer a {
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+    /* Анимации */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    /* Responsive (Mobile) */
+    @media (max-width: 600px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      nav a {
+        padding: 10px 0;
+        width: 100%;
+      }
+      table, th, td {
+        font-size: 0.9em;
+      }
+      .insight-box {
+        flex: 1 1 100%;
+      }
+      .coin-card {
+        width: 45%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header и навигация -->
+  <header>
+    <div class="logo">ALLIANCE RHYTHM™</div>
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <nav id="nav-menu">
+      <a href="#" class="nav-link" data-section="dashboard-section">Dashboard</a>
+      <a href="#" class="nav-link" data-section="trading-section">Trading</a>
+      <a href="#" class="nav-link" data-section="volume-section">High Volume</a>
+      <a href="#" class="nav-link" data-section="global-section">Global Stats</a>
+      <a href="#" class="nav-link" data-section="gainers-section">Top Gainers</a>
+      <a href="#" class="nav-link" data-section="losers-section">Top Losers</a>
+      <a href="#" class="nav-link" data-section="compare-section">Compare</a>
+      <a href="#" class="nav-link" data-section="insights-section">Insights</a>
+      <a href="#" class="nav-link" data-section="news-section">News</a>
+      <a href="#" class="nav-link" data-section="profile-section">Profile</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Dashboard Section -->
+    <section id="dashboard-section" class="active">
+      <h2>Crypto Dashboard</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Монета</th>
+            <th>Цена</th>
+            <th>24ч %</th>
+            <th>Капитализация</th>
+          </tr>
+        </thead>
+        <tbody id="crypto-table">
+          <!-- Данные загружаются динамически -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Trading Section -->
+    <section id="trading-section">
+      <h2>Trading</h2>
+      <p>Все рабочие монеты представлены в виде карточек. Кликните на любую карточку для просмотра графика.</p>
+      <div id="trading-container" class="card-container">
+        <!-- Карточки монет для торговли -->
+      </div>
+    </section>
+
+    <!-- High Volume Section -->
+    <section id="volume-section">
+      <h2>High Volume</h2>
+      <p>Монеты с наибольшим объёмом торгов – полезная информация для трейдеров.</p>
+      <div id="volume-container" class="card-container">
+        <!-- Карточки монет по объёму -->
+      </div>
+    </section>
+
+    <!-- Global Market Stats Section -->
+    <section id="global-section">
+      <h2>Global Market Stats</h2>
+      <div id="global-container">
+        <!-- Глобальная статистика -->
+      </div>
+    </section>
+
+    <!-- Top Gainers Section -->
+    <section id="gainers-section">
+      <h2>Top Gainers</h2>
+      <div id="gainers-container">
+        <!-- Таблица топ-роста -->
+      </div>
+    </section>
+
+    <!-- Top Losers Section -->
+    <section id="losers-section">
+      <h2>Top Losers</h2>
+      <div id="losers-container">
+        <!-- Таблица топ-падения -->
+      </div>
+    </section>
+
+    <!-- Compare Section -->
+    <section id="compare-section">
+      <h2>Сравнение криптовалют</h2>
+      <p>Выберите монеты для сравнения:</p>
+      <div id="compare-list">
+        <!-- Список монет с чекбоксами -->
+      </div>
+      <button id="compare-btn" style="margin-top:15px; padding:10px 20px; background:var(--primary-color); border:none; border-radius:4px; color:#fff; cursor:pointer;">Сравнить</button>
+      <div id="compare-table">
+        <!-- Результаты сравнения -->
+      </div>
+    </section>
+
+    <!-- Insights Section -->
+    <section id="insights-section">
+      <h2>Trading Insights</h2>
+      <div id="insights-content">
+        <div class="insight-box">
+          <h3>BTC/USDT Chart</h3>
+          <div id="tv_widget_btc" style="height:300px;"></div>
+        </div>
+        <div class="insight-box">
+          <h3>Торговые советы</h3>
+          <ul style="text-align:left; padding-left:20px;">
+            <li>Следите за объемами торгов для подтверждения тренда.</li>
+            <li>Используйте уровни поддержки и сопротивления для входа в рынок.</li>
+            <li>Применяйте риск-менеджмент и ставьте стоп-лоссы.</li>
+            <li>Анализируйте новости и макроэкономическую ситуацию.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- News Section -->
+    <section id="news-section">
+      <h2>Crypto News</h2>
+      <div id="news-container">
+        <!-- Новости (статичный пример) -->
+      </div>
+    </section>
+
+    <!-- Profile Section -->
+    <section id="profile-section">
+      <h2>Профиль</h2>
+      <div id="user-info"></div>
+      <div id="auth-forms">
+        <div class="tab">
+          <button id="login-tab" class="active">Вход</button>
+          <button id="register-tab">Регистрация</button>
+        </div>
+        <div id="login-form" class="form-container">
+          <input type="text" id="login-username" placeholder="Имя пользователя" required>
+          <input type="password" id="login-password" placeholder="Пароль" required>
+          <button id="login-btn">Войти</button>
+        </div>
+        <div id="register-form" class="form-container" style="display:none;">
+          <input type="text" id="register-username" placeholder="Имя пользователя" required>
+          <input type="email" id="register-email" placeholder="Email" required>
+          <input type="password" id="register-password" placeholder="Пароль" required>
+          <button id="register-btn">Зарегистрироваться</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 ALLIANCE RHYTHM™. Все права защищены.</p>
+    <p>Присоединяйтесь к нашему Telegram каналу: <a href="https://t.me/ALLIANCE_RHYTHM" target="_blank">https://t.me/ALLIANCE_RHYTHM</a></p>
+  </footer>
+
+  <!-- Модальное окно для TradingView графика -->
+  <div id="chartModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeModal">&times;</span>
+      <h2 id="modalTitle">График монеты</h2>
+      <div id="tv_chart_container" style="height:400px;"></div>
+    </div>
+  </div>
+
+  <script>
+    // Глобальная переменная для данных монет
+    let allCoinsData = [];
+
+    // Управление мобильным меню
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('nav-menu');
+    hamburger.addEventListener('click', () => {
+      navMenu.classList.toggle('open');
+      hamburger.classList.toggle('active');
+    });
+
+    // Навигация по разделам
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = this.getAttribute('data-section');
+        document.querySelectorAll('main > section').forEach(sec => {
+          sec.classList.remove('active');
+        });
+        document.getElementById(target).classList.add('active');
+        // Обновление данных для определённых разделов
+        if(target === 'compare-section') { loadCompareList(); }
+        if(target === 'news-section') { loadNews(); }
+        if(target === 'trading-section') { loadTradingData(); }
+        if(target === 'volume-section') { loadVolumeData(); }
+      });
+    });
+
+    // Загрузка данных криптовалют (топ-100) для Dashboard и других разделов
+    async function fetchCryptoData() {
+      try {
+        const response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false');
+        const data = await response.json();
+        allCoinsData = data;
+        const table = document.getElementById('crypto-table');
+        table.innerHTML = '';
+        data.forEach((coin, index) => {
+          const row = document.createElement('tr');
+          row.style.cursor = 'pointer';
+          row.innerHTML = `
+            <td>${index + 1}</td>
+            <td><img src="${coin.image}" width="20" alt="${coin.name}"> ${coin.name} (${coin.symbol.toUpperCase()})</td>
+            <td>$${coin.current_price.toFixed(2)}</td>
+            <td class="${coin.price_change_percentage_24h >= 0 ? 'green' : 'red'}">${coin.price_change_percentage_24h.toFixed(2)}%</td>
+            <td>$${coin.market_cap.toLocaleString()}</td>
+          `;
+          row.addEventListener('click', () => openChartModal(coin));
+          table.appendChild(row);
+        });
+        updateGainersAndLosers();
+      } catch (error) {
+        console.error('Ошибка загрузки данных:', error);
+      }
+    }
+    fetchCryptoData();
+    setInterval(fetchCryptoData, 60000);
+
+    // Trading Section: отображение карточек монет
+    function loadTradingData() {
+      const container = document.getElementById('trading-container');
+      container.innerHTML = '';
+      if(allCoinsData.length === 0) {
+        fetchCryptoData().then(() => renderTradingCards(allCoinsData));
+      } else {
+        renderTradingCards(allCoinsData);
+      }
+    }
+    function renderTradingCards(data) {
+      const container = document.getElementById('trading-container');
+      container.innerHTML = '';
+      data.forEach(coin => {
+        const card = document.createElement('div');
+        card.className = 'coin-card';
+        card.innerHTML = `
+          <img src="${coin.image}" alt="${coin.name}">
+          <h4>${coin.name}</h4>
+          <p>$${coin.current_price.toFixed(2)}</p>
+          <p class="${coin.price_change_percentage_24h >= 0 ? 'green' : 'red'}">${coin.price_change_percentage_24h.toFixed(2)}%</p>
+        `;
+        card.addEventListener('click', () => openChartModal(coin));
+        container.appendChild(card);
+      });
+    }
+
+    // High Volume Section: карточки монет с наибольшим объёмом торгов
+    function loadVolumeData() {
+      const container = document.getElementById('volume-container');
+      container.innerHTML = '';
+      if(allCoinsData.length === 0) {
+        fetchCryptoData().then(() => renderVolumeCards(allCoinsData));
+      } else {
+        renderVolumeCards(allCoinsData);
+      }
+    }
+    function renderVolumeCards(data) {
+      const container = document.getElementById('volume-container');
+      const sorted = data.slice().sort((a, b) => b.total_volume - a.total_volume).slice(0, 10);
+      sorted.forEach(coin => {
+        const card = document.createElement('div');
+        card.className = 'coin-card';
+        card.innerHTML = `
+          <img src="${coin.image}" alt="${coin.name}">
+          <h4>${coin.name}</h4>
+          <p>$${coin.current_price.toFixed(2)}</p>
+          <p>Volume: $${Number(coin.total_volume).toLocaleString()}</p>
+        `;
+        card.addEventListener('click', () => openChartModal(coin));
+        container.appendChild(card);
+      });
+    }
+
+    // Global Market Stats
+    async function fetchGlobalStats() {
+      try {
+        const response = await fetch('https://api.coingecko.com/api/v3/global');
+        const data = await response.json();
+        const globalData = data.data;
+        const container = document.getElementById('global-container');
+        container.innerHTML = `
+          <p>Total Market Cap: $${Number(globalData.total_market_cap.usd).toLocaleString()}</p>
+          <p>Total Volume: $${Number(globalData.total_volume.usd).toLocaleString()}</p>
+          <p>BTC Dominance: ${globalData.market_cap_percentage.btc.toFixed(2)}%</p>
+          <p>Active Cryptocurrencies: ${globalData.active_cryptocurrencies}</p>
+        `;
+      } catch (error) {
+        console.error('Ошибка загрузки глобальных данных:', error);
+      }
+    }
+    fetchGlobalStats();
+    setInterval(fetchGlobalStats, 60000);
+
+    // Top Gainers и Top Losers
+    function updateGainersAndLosers() {
+      if (!allCoinsData || allCoinsData.length === 0) return;
+      const gainers = allCoinsData.filter(c => c.price_change_percentage_24h > 0)
+        .sort((a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h)
+        .slice(0, 10);
+      const losers = allCoinsData.filter(c => c.price_change_percentage_24h < 0)
+        .sort((a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h)
+        .slice(0, 10);
+      const gainersContainer = document.getElementById('gainers-container');
+      const losersContainer = document.getElementById('losers-container');
+      gainersContainer.innerHTML = '<table style="width:100%;"><thead><tr><th>Монета</th><th>Изменение 24ч</th></tr></thead><tbody>' +
+        gainers.map(coin => `<tr style="cursor:pointer;" onclick='openChartModal(${JSON.stringify(coin)})'>
+          <td><img src="${coin.image}" width="20" alt="${coin.name}"> ${coin.name}</td>
+          <td class="green">${coin.price_change_percentage_24h.toFixed(2)}%</td>
+        </tr>`).join('') +
+        '</tbody></table>';
+      losersContainer.innerHTML = '<table style="width:100%;"><thead><tr><th>Монета</th><th>Изменение 24ч</th></tr></thead><tbody>' +
+        losers.map(coin => `<tr style="cursor:pointer;" onclick='openChartModal(${JSON.stringify(coin)})'>
+          <td><img src="${coin.image}" width="20" alt="${coin.name}"> ${coin.name}</td>
+          <td class="red">${coin.price_change_percentage_24h.toFixed(2)}%</td>
+        </tr>`).join('') +
+        '</tbody></table>';
+    }
+
+    // Compare Section: загрузка списка монет с чекбоксами
+    async function loadCompareList() {
+      try {
+        const response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false');
+        const data = await response.json();
+        const compareList = document.getElementById('compare-list');
+        compareList.innerHTML = '';
+        data.forEach(coin => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <input type="checkbox" class="compare-checkbox" id="compare-${coin.id}" data-coin='${JSON.stringify(coin)}'>
+            <label for="compare-${coin.id}">${coin.name} (${coin.symbol.toUpperCase()})</label>
+          `;
+          compareList.appendChild(div);
+        });
+      } catch (error) {
+        console.error('Ошибка загрузки списка для сравнения:', error);
+      }
+    }
+    document.getElementById('compare-btn').addEventListener('click', () => {
+      const selected = document.querySelectorAll('.compare-checkbox:checked');
+      if (selected.length < 2) {
+        alert('Выберите минимум 2 монеты для сравнения.');
+        return;
+      }
+      let html = '<table><thead><tr><th>Монета</th><th>Цена</th><th>24ч %</th><th>Капитализация</th></tr></thead><tbody>';
+      selected.forEach(chk => {
+        const coin = JSON.parse(chk.getAttribute('data-coin'));
+        html += `<tr>
+          <td><img src="${coin.image}" width="20"> ${coin.name} (${coin.symbol.toUpperCase()})</td>
+          <td>$${coin.current_price.toFixed(2)}</td>
+          <td class="${coin.price_change_percentage_24h >= 0 ? 'green' : 'red'}">${coin.price_change_percentage_24h.toFixed(2)}%</td>
+          <td>$${coin.market_cap.toLocaleString()}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('compare-table').innerHTML = html;
+    });
+
+    // Insights Section: TradingView виджет для BTC/USDT
+    new TradingView.widget({
+      autosize: true,
+      symbol: 'BINANCE:BTCUSDT',
+      interval: 'D',
+      timezone: 'Etc/UTC',
+      theme: 'dark',
+      style: '1',
+      locale: 'ru',
+      toolbar_bg: '#f1f3f6',
+      enable_publishing: false,
+      hide_side_toolbar: false,
+      container_id: 'tv_widget_btc'
+    });
+
+    // News Section: Статичные новости
+    function loadNews() {
+      const newsData = [
+        {
+          title: "Bitcoin достиг нового максимума",
+          content: "Биткоин установил новый рекорд по цене, продолжая удивлять инвесторов по всему миру.",
+          link: "#"
+        },
+        {
+          title: "Ethereum 2.0 – обновление сети",
+          content: "Разработчики Ethereum продолжают работу над обновлением, которое принесет масштабируемость и безопасность.",
+          link: "#"
+        },
+        {
+          title: "DeFi проекты привлекают миллионы инвестиций",
+          content: "Сектор DeFi продолжает расти, привлекая инвестиции как от частных, так и от институциональных инвесторов.",
+          link: "#"
+        }
+      ];
+      const newsContainer = document.getElementById('news-container');
+      newsContainer.innerHTML = '';
+      newsData.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'news-item';
+        div.style.background = "#1e1e1e";
+        div.style.padding = "15px";
+        div.style.margin = "10px 0";
+        div.style.borderRadius = "4px";
+        div.style.transition = "background 0.3s";
+        div.innerHTML = `<h3>${item.title}</h3>
+                         <p>${item.content}</p>
+                         <a href="${item.link}" target="_blank">Подробнее</a>`;
+        newsContainer.appendChild(div);
+      });
+    }
+
+    // Модальное окно: открытие TradingView графика для выбранной монеты
+    function openChartModal(coin) {
+      document.getElementById('modalTitle').textContent = `${coin.name} (${coin.symbol.toUpperCase()}) — график`;
+      const modal = document.getElementById('chartModal');
+      modal.style.display = 'block';
+      document.getElementById('tv_chart_container').innerHTML = '';
+      const tvSymbol = 'BINANCE:' + coin.symbol.toUpperCase() + 'USDT';
+      new TradingView.widget({
+        autosize: true,
+        symbol: tvSymbol,
+        interval: 'D',
+        timezone: 'Etc/UTC',
+        theme: 'dark',
+        style: '1',
+        locale: 'ru',
+        toolbar_bg: '#f1f3f6',
+        enable_publishing: false,
+        hide_side_toolbar: false,
+        container_id: 'tv_chart_container'
+      });
+    }
+    document.getElementById('closeModal').addEventListener('click', () => {
+      document.getElementById('chartModal').style.display = 'none';
+    });
+    window.addEventListener('click', (event) => {
+      const modal = document.getElementById('chartModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+
+    // Регистрация / Вход через localStorage
+    function showUserInfo() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const userInfo = document.getElementById('user-info');
+      if (user && user.username) {
+        userInfo.innerHTML = `<p>Добро пожаловать, <strong>${user.username}</strong>!</p>
+                              <button id="logout-btn" style="padding:8px 16px; background:#f44336; border:none; border-radius:4px; color:#fff; cursor:pointer;">Выйти</button>`;
+        document.getElementById('auth-forms').style.display = 'none';
+        document.getElementById('logout-btn').addEventListener('click', () => {
+          localStorage.removeItem('user');
+          showUserInfo();
+        });
+      } else {
+        userInfo.innerHTML = '<p>Вы не авторизованы.</p>';
+        document.getElementById('auth-forms').style.display = 'block';
+      }
+    }
+    document.getElementById('register-btn').addEventListener('click', () => {
+      const username = document.getElementById('register-username').value.trim();
+      const email = document.getElementById('register-email').value.trim();
+      const password = document.getElementById('register-password').value.trim();
+      if (!username || !email || !password) {
+        alert('Заполните все поля.');
+        return;
+      }
+      const user = { username, email, password };
+      localStorage.setItem('user', JSON.stringify(user));
+      alert('Регистрация успешна!');
+      showUserInfo();
+    });
+    document.getElementById('login-btn').addEventListener('click', () => {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+      if (!username || !password) {
+        alert('Заполните все поля.');
+        return;
+      }
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+      if (storedUser && storedUser.username === username && storedUser.password === password) {
+        alert('Вход успешен!');
+        showUserInfo();
+      } else {
+        alert('Неверные имя пользователя или пароль.');
+      }
+    });
+    document.getElementById('login-tab').addEventListener('click', () => {
+      document.getElementById('login-tab').classList.add('active');
+      document.getElementById('register-tab').classList.remove('active');
+      document.getElementById('login-form').style.display = 'block';
+      document.getElementById('register-form').style.display = 'none';
+    });
+    document.getElementById('register-tab').addEventListener('click', () => {
+      document.getElementById('register-tab').classList.add('active');
+      document.getElementById('login-tab').classList.remove('active');
+      document.getElementById('register-form').style.display = 'block';
+      document.getElementById('login-form').style.display = 'none';
+    });
+    showUserInfo();
+  </script>
+</body>
+</html>
